@@ -41,23 +41,29 @@ public class Client {
         return con;
     }
 
+    public void contactInfo(XMPPConnection con, String user_name) throws XMPPException {
+        roster = con.getRoster();
+        RosterEntry r = roster.getEntry(user_name);
+        Presence presence = roster.getPresence(user_name);
+        System.out.println("\n ~ Username: " + r.getName() + "\n ~ Status: " + presence.getType() + "\n ~ ID: " + presence.getPacketID() + "\n ~ Subscription mode: " + roster.getSubscriptionMode() + "\n");
+
+    }
+
 
     public void addContact(XMPPConnection con, String user_name) throws XMPPException {
         Roster.setDefaultSubscriptionMode(Roster.SubscriptionMode.accept_all);
         roster = con.getRoster();
-        try {
-            String[] contact_list = new String[1];
-            contact_list[0] = "Friends";
-            roster.createEntry(user_name, user_name, contact_list);
-
-            // subscription to user
-            Presence presence = new Presence(Presence.Type.subscribe);
-            presence.setTo(user_name);
-            con.sendPacket(presence);
-        } catch (XMPPException e) {
-            e.printStackTrace();
-        }
         
+        // create space for new user to be added
+        String[] contact_list = new String[1];
+        contact_list[0] = "Friends";
+        roster.createEntry(user_name, user_name, contact_list);
+
+        // subscription to user
+        Presence presence = new Presence(Presence.Type.subscribe);
+        presence.setTo(user_name);
+        con.sendPacket(presence);
+       
     }
 
     public void getStatus(XMPPConnection con) throws XMPPException {
@@ -128,7 +134,7 @@ public class Client {
         // chat menu 
         String msg_sent;
         System.out.println("\n+                       Private chatroom                       +\n");
-        System.out.print("Enter username of the contact you want to chat with: ");
+        System.out.print("Enter username of the contact you want to chat with (write ~bye to quit chat): ");
         String contactName = sc.nextLine();
         // class chat in smack lib "pruebauser@alumchat.fun"
         Chat chat = con.getChatManager().createChat(contactName, new MessageListener() {
@@ -143,12 +149,11 @@ public class Client {
         do {
             System.out.print(">> ");
             msg_sent = sc.nextLine();
+            System.out.print(">> ");
             chat.sendMessage(msg_sent);
         }
-        while(!(msg_sent.equals("~out")));
+        while(!(msg_sent.equals("~bye")));
     }
-
-
 
     
 }

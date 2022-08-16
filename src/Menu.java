@@ -113,6 +113,11 @@ public class Menu {
             case 3:
                 // show contact details
                 System.out.println("\nshow contacts details\n");
+                System.out.println("\n+-+-+-+-+-+-+-+-+-+-++-+-+-+-+-+-+-+-+-+-++-+-+-+-+-+-+-+-+-+-+");
+                System.out.println("\n+                       Contact details                       +\n");
+                System.out.print("Enter username: ");
+                String user_name = sc.nextLine();
+                client.contactInfo(con, user_name);
                 break;
 
             case 4:
