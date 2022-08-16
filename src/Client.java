@@ -3,21 +3,28 @@
  * 
  */
 
- // Client client = new Client();
-// client.connection_cofig();
+import java.util.Collection;
 
 import java.util.Scanner;
+
 
 import org.jivesoftware.smack.AccountManager;
 import org.jivesoftware.smack.Chat;
 import org.jivesoftware.smack.ConnectionConfiguration;
 import org.jivesoftware.smack.MessageListener;
+import org.jivesoftware.smack.Roster;
+import org.jivesoftware.smack.RosterEntry;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.packet.Message;
+import org.jivesoftware.smack.packet.Presence;
+
+
+
 
 public class Client {
     Scanner sc = new Scanner(System.in);
+    Roster roster;
 
     public XMPPConnection connection_cofig() throws Exception {
         // connection object
@@ -34,6 +41,52 @@ public class Client {
         return con;
     }
 
+
+    public void addContact(XMPPConnection con, String user_name) throws XMPPException {
+        Roster.setDefaultSubscriptionMode(Roster.SubscriptionMode.accept_all);
+        roster = con.getRoster();
+        try {
+            String[] contact_list = new String[1];
+            contact_list[0] = "Friends";
+            roster.createEntry(user_name, user_name, contact_list);
+
+            // subscription to user
+            Presence presence = new Presence(Presence.Type.subscribe);
+            presence.setTo(user_name);
+            con.sendPacket(presence);
+        } catch (XMPPException e) {
+            e.printStackTrace();
+        }
+        
+    }
+
+    public void getStatus(XMPPConnection con) throws XMPPException {
+        roster = con.getRoster();
+        Collection<RosterEntry> entries = roster.getEntries();
+        System.out.println("\n\n" + entries.size() + " Friends 龴ↀ◡ↀ龴:");
+
+        for (RosterEntry r : entries) {
+            String user = r.getUser();
+            Presence.Mode status = roster.getPresence(user).getMode();
+            Presence.Type type = roster.getPresence(user).getType();
+
+            if (type.equals(null) || type.equals(Presence.Type.available)) {
+                if (status == null || status.equals(Presence.Mode.available)) {
+                    
+                    System.out.println(user + " : Online");
+                } else if (status.equals(Presence.Mode.chat)) {
+                    
+                    System.out.println(user + " : Ready to chat");
+                }
+
+            } else {
+           
+                System.out.println(user + " : Offline");
+            }
+            
+        }
+
+    }
 
     public void createAccount(XMPPConnection con) throws XMPPException {
 
@@ -73,6 +126,7 @@ public class Client {
 
     public void chat(XMPPConnection con) throws XMPPException {
         // chat menu 
+        String msg_sent;
         System.out.println("\n+                       Private chatroom                       +\n");
         System.out.print("Enter username of the contact you want to chat with: ");
         String contactName = sc.nextLine();
@@ -86,10 +140,12 @@ public class Client {
             }
         });
         
-        while(con.isConnected()) {
-            System.out.print("\n>> ");
-            chat.sendMessage(sc.nextLine());
+        do {
+            System.out.print(">> ");
+            msg_sent = sc.nextLine();
+            chat.sendMessage(msg_sent);
         }
+        while(!(msg_sent.equals("~out")));
     }
 
 

@@ -97,11 +97,17 @@ public class Menu {
             case 1:
                 // show all contacts
                 System.out.println("\ncontacts\n");
+                client.getStatus(con);
                 break;
 
             case 2:
                 // add user to contacts
                 System.out.println("\nadd contacts\n");
+                System.out.println("\n+-+-+-+-+-+-+-+-+-+-++-+-+-+-+-+-+-+-+-+-++-+-+-+-+-+-+-+-+-+-+");
+                System.out.println("\n+                       Add new contact                       +\n");
+                System.out.print("Enter username: ");
+                String friend = sc.nextLine();
+                client.addContact(con, friend);
                 break;
 
             case 3:
