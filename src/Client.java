@@ -7,6 +7,7 @@ import java.util.Collection;
 
 import java.util.Scanner;
 
+// import javax.jws.WebParam.Mode;
 
 import org.jivesoftware.smack.AccountManager;
 import org.jivesoftware.smack.Chat;
@@ -14,10 +15,12 @@ import org.jivesoftware.smack.ConnectionConfiguration;
 import org.jivesoftware.smack.MessageListener;
 import org.jivesoftware.smack.Roster;
 import org.jivesoftware.smack.RosterEntry;
+import org.jivesoftware.smack.RosterListener;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Presence;
+import org.jivesoftware.smack.packet.Presence.Type;
 
 
 
@@ -25,9 +28,12 @@ import org.jivesoftware.smack.packet.Presence;
 public class Client {
     Scanner sc = new Scanner(System.in);
     Roster roster;
+    boolean connectedServer;
+    Presence presence;
 
     public XMPPConnection connection_cofig() throws Exception {
         // connection object
+        
         ConnectionConfiguration config = new ConnectionConfiguration("alumchat.fun", 5222);
         config.setSecurityMode(ConnectionConfiguration.SecurityMode.disabled);
         config.setDebuggerEnabled(false);
@@ -36,11 +42,84 @@ public class Client {
         XMPPConnection con = new XMPPConnection(config);
         con.connect();
         
+        
         System.out.println("Connected to server\n");
+    
+
+        setStatus(Type.available, con);
 
         return con;
     }
 
+    public void mainRoster(XMPPConnection con) throws XMPPException {
+        if (con.isConnected()) {
+            roster = con.getRoster();
+            Collection<RosterEntry> entries = roster.getEntries();
+            roster.addRosterListener(new RosterListener() {
+                
+                @Override
+                public void entriesAdded(Collection<String> arg0) {
+                    System.out.println("Entries added to server");
+                }
+
+                @Override
+                public void entriesDeleted(Collection<String> arg0) {
+                    System.out.println("Entries delete from server");
+                }
+
+                @Override
+                public void entriesUpdated(Collection<String> arg0) {
+                    try {
+                        getContacts(con);
+                    } catch (XMPPException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
+                    
+                }
+                @Override
+                public void presenceChanged(Presence presence) {
+                    try {
+                        getStatus(entries, con);
+                    } catch (XMPPException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
+                }
+                
+            });
+            
+        }
+
+    }
+    // different status available for a user
+    public Presence.Type setStatus(Presence.Type type, XMPPConnection con) {
+        
+        switch(type) {
+            case available: {
+                presence = new Presence(Presence.Type.available);
+                presence.setType(Type.available);
+                break;
+            }
+            case unavailable: {
+                presence = new Presence(Presence.Type.unavailable);
+                presence.setType(Type.unavailable);
+                break;
+            }
+            default:
+                return type;
+        }
+        if (con.isConnected()) {
+            con.sendPacket(presence);
+        }
+        return type;
+    }
+    // delete user account
+    public void deleteAccount(XMPPConnection con) throws XMPPException {
+        con.getAccountManager().deleteAccount();
+        System.out.println("\nYour account has been deleted, see ya!\n");
+        con.disconnect();
+    }
     public void contactInfo(XMPPConnection con, String user_name) throws XMPPException {
         roster = con.getRoster();
         RosterEntry r = roster.getEntry(user_name);
@@ -65,32 +144,34 @@ public class Client {
         con.sendPacket(presence);
        
     }
+    public void getStatus(Collection<RosterEntry> entries, XMPPConnection con) throws XMPPException {
+        
+        for (RosterEntry r : entries) {
+            connectedServer = true;
+            Presence presence = roster.getPresence(r.getUser());
+            
+            if (con.isConnected()) {
+                Type type = setStatus(Type.available, con);
+                presence.setType(type);
+                System.out.println("User -> " + r.getName().toString() + " : " + type.toString());
+            } else {
+                Type type = setStatus(Type.unavailable, con);
+                presence.setType(type);
+                System.out.println("User -> " + r.getName().toString() + " : " + type.toString());
 
-    public void getStatus(XMPPConnection con) throws XMPPException {
+            }
+            
+        } 
+        
+    }
+
+    public void getContacts(XMPPConnection con) throws XMPPException {
         roster = con.getRoster();
         Collection<RosterEntry> entries = roster.getEntries();
         System.out.println("\n\n" + entries.size() + " Friends 龴ↀ◡ↀ龴:");
+       
 
-        for (RosterEntry r : entries) {
-            String user = r.getUser();
-            Presence.Mode status = roster.getPresence(user).getMode();
-            Presence.Type type = roster.getPresence(user).getType();
-
-            if (type.equals(null) || type.equals(Presence.Type.available)) {
-                if (status == null || status.equals(Presence.Mode.available)) {
-                    
-                    System.out.println(user + " : Online");
-                } else if (status.equals(Presence.Mode.chat)) {
-                    
-                    System.out.println(user + " : Ready to chat");
-                }
-
-            } else {
-           
-                System.out.println(user + " : Offline");
-            }
-            
-        }
+        getStatus(entries, con);
 
     }
 
@@ -121,6 +202,14 @@ public class Client {
         
         // login
         con.login(username, password);
+        mainRoster(con);
+        roster = con.getRoster();
+        
+        Presence.Mode status = roster.getPresence(username).getMode();
+        Presence.Type type = setStatus(Type.available, con);
+        System.out.println("status -> " + status + "\n");
+        System.out.println("type -> " + type + "\n");
+
         return username;
     }
 

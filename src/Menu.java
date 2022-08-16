@@ -97,7 +97,7 @@ public class Menu {
             case 1:
                 // show all contacts
                 System.out.println("\ncontacts\n");
-                client.getStatus(con);
+                client.getContacts(con);
                 break;
 
             case 2:
@@ -154,6 +154,7 @@ public class Menu {
             case 10:
                 // delete account
                 System.out.println("\ndelted\n");
+                client.deleteAccount(con);
                 break; 
 
             default:
