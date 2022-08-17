@@ -9,6 +9,7 @@ public class Menu {
     Client client = new Client();
     Scanner sc = new Scanner(System.in);
 
+
     public void mainMenu() throws Exception {
         header();
         XMPPConnection con = client.connection_cofig();
@@ -77,7 +78,7 @@ public class Menu {
                     loginOptionMenu();
                     int loginOption = getInput(10);
                     loginMenu(loginOption, con);
-                }
+                } 
                 
                 break;
 
@@ -96,14 +97,11 @@ public class Menu {
         switch(option) {
             case 1:
                 // show all contacts
-                System.out.println("\ncontacts\n");
                 client.getContacts(con);
                 break;
 
             case 2:
                 // add user to contacts
-                System.out.println("\nadd contacts\n");
-                System.out.println("\n+-+-+-+-+-+-+-+-+-+-++-+-+-+-+-+-+-+-+-+-++-+-+-+-+-+-+-+-+-+-+");
                 System.out.println("\n+                       Add new contact                       +\n");
                 System.out.print("Enter username: ");
                 String friend = sc.nextLine();
@@ -113,7 +111,6 @@ public class Menu {
             case 3:
                 // show contact details
                 System.out.println("\nshow contacts details\n");
-                System.out.println("\n+-+-+-+-+-+-+-+-+-+-++-+-+-+-+-+-+-+-+-+-++-+-+-+-+-+-+-+-+-+-+");
                 System.out.println("\n+                       Contact details                       +\n");
                 System.out.print("Enter username: ");
                 String user_name = sc.nextLine();
@@ -122,22 +119,28 @@ public class Menu {
 
             case 4:
                 // 1-to-1 chat
-                System.out.println("\nchat\n");
                 client.chat(con);
                 break;
 
             case 5:
                 // groupchat
-                System.out.println("\ngroupchats\n");
+                client.groupchat(con);
                 break;
 
             case 6:
                 // presence message
-                System.out.println("\npresence message\n");
+                client.presenceMessage(con);
                 break;
+
             case 7:
-                // send/ receive notifications
+
+                // System.out.println("\n+                       Create groupchat                       +\n");
+                // System.out.print("Enter groupchat name you want to create: ");
+                // String groupchatName = sc.nextLine();
+                // groupchatName += "@alumchat.fun";
+                        // send/ receive notifications
                 System.out.println("\nnotifications\n");
+                
                 break;
 
             case 8:
