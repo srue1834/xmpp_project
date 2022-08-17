@@ -7,7 +7,7 @@ public class App {
 
     public static void main(String[] args) throws Exception {
         // Client client = new Client();
-        Menu menu = new Menu();
+        Menu2 menu = new Menu2();
         // client.connection_cofig();
         menu.mainMenu();
    
